@@ -1,0 +1,8 @@
+# Ignore Jupyter notebook checkpoints
+*.ipynb_checkpoints/
+
+# Ignore scenario_b_data folder
+scenario_b_data/
+
+# Ignore scenario_c_data folder
+scenario_c_data/
