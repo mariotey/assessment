@@ -1,0 +1,90 @@
+############################################################
+i)
+############################################################
+
+SELECT 
+	p.Patient_id, 
+	p.Patient_name, 
+	COUNT(iv.Encounter_id) AS Inpatient_Visit_Count
+FROM
+	Patient p
+LEFT JOIN 
+	Inpatientvisits iv ON p.Patient_id = iv.Patient_id
+GROUP BY 
+	p.Patient_id, p.Patient_name
+
+############################################################
+ii) 
+############################################################
+
+SELECT 
+    p.Patient_id,
+    p.Patient_name,
+    p.DOB,
+    p.Gender,
+    p.Address,
+    iv.Admission_datetime,
+    iv.Discharge_datetime,
+    iv.Death_ind
+FROM 
+    Patient p
+JOIN 
+    Inpatientvisits iv ON p.Patient_id = iv.Patient_id
+WHERE 
+    iv.Admission_datetime = (
+        SELECT MIN(Admission_datetime)
+        FROM Inpatientvisits
+        WHERE Patient_id = p.Patient_id
+    );
+
+############################################################
+iii) 
+############################################################
+
+SELECT 
+    p.Patient_id,
+    p.Patient_name,
+    p.DOB,
+    p.Gender,
+    p.Address,
+    iv.Encounter_id,
+    iv.Admission_datetime,
+    iv.Discharge_datetime,
+    iv.Death_ind,
+    DATEDIFF(iv.Discharge_datetime, iv.Admission_datetime) AS Length_of_Stay
+FROM 
+    Patient p
+JOIN 
+    Inpatientvisits iv ON p.Patient_id = iv.Patient_id
+WHERE 
+    iv.Death_ind = FALSE
+ORDER BY 
+    Length_of_Stay DESC
+LIMIT 1;
+
+############################################################
+iv) 
+############################################################
+
+SELECT 
+    p.Patient_id,
+    p.Patient_name,
+    p.DOB,
+    p.Gender,
+    p.Address,
+    iv1.Encounter_id,
+    iv1.Admission_datetime,
+    iv1.Discharge_datetime,
+    iv1.Death_ind
+FROM 
+    Inpatientvisits iv1
+JOIN 
+    Patient p ON iv1.Patient_id = p.Patient_id
+WHERE 
+    EXISTS (
+        SELECT 1
+        FROM Inpatientvisits iv2
+        WHERE iv2.Patient_id = iv1.Patient_id
+        AND iv2.Admission_datetime > iv1.Discharge_datetime
+        AND iv2.Admission_datetime <= DATE_ADD(iv1.Discharge_datetime, INTERVAL 1 YEAR)
+    );
